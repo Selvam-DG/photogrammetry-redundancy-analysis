@@ -1,0 +1,17 @@
+# Redundancy Reduction configuration
+resize_max: 800     # Resize images for speed (max side in px)
+hash_size: 16
+weights:
+  phash: 0.5
+  dhash: 0.3
+  ssim: 0.2
+clustering:
+  method: dbscan      # K-Means clustering algorithms
+  eps: 0.18
+  min_samples: 2
+selection:
+  criterion: sharpest   # "sharpest" or "brightest"
+output_dirs:
+  kept: "outputs/kept"
+  removed: "outputs/removed"
+  report: "outputs/reports"
