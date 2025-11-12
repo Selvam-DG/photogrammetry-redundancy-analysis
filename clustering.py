@@ -17,4 +17,5 @@ def cluster_features(distance_matrix, method='dbscan', eps=0.18, min_samples=2, 
     else:
         raise ValueError("Unsupported clustering method.")
     
+    print(labels)
     return labels

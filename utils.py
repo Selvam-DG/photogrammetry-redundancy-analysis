@@ -28,8 +28,8 @@ def load_images_from_folder(folder, resize_max):
 def plot_heatmap(matrix, names, save_path):
     plt.figure(figsize=(10,8))
     sns.heatmap(matrix, cmap="viridis")
-    plt.tile("Image Similarity Heatmap")
-    plt.save(save_path)
+    plt.title("Image Similarity Heatmap")
+    plt.savefig(save_path)
     plt.close()
     
 def log_results(data, output_dir):

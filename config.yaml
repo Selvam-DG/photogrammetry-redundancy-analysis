@@ -7,8 +7,10 @@ weights:
   ssim: 0.2
 clustering:
   method: dbscan      # K-Means clustering algorithms
-  eps: 0.18
-  min_samples: 2
+  # eps: 0.18     # trail-1
+  eps: 0.1        # If the eps value is too large, DBSCAN might treat all the images as a single cluster
+  # min_samples: 2  # trial -1
+  min_samples: 4
 selection:
   criterion: sharpest   # "sharpest" or "brightest"
 output_dirs:
