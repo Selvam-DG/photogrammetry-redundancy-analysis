@@ -76,7 +76,7 @@ def run_reduvis(input_dir, config_path="config.yaml"):
          } for i in range(n)
     ], cfg['output_dirs']['report'])
     
-    with open(os.path.join(cfg['output_dirs']['report'], "summary.jsoon"), "w") as f:
+    with open(os.path.join(cfg['output_dirs']['report'], "summary.json"), "w") as f:
         import json
         json.dump(summary, f, indent=4)
     print(f"[INFO] Report saved to {csv_path}")

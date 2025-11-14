@@ -218,3 +218,6 @@ __marimo__/
 /output/*
 /inputs/*
 /outputs/*
+
+# skip files
+test*
