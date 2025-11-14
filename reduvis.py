@@ -5,7 +5,7 @@ from similarity_metrics import compute_phash, compute_dhash, hamming_distance, c
 from clustering import cluster_features
 from utils import ensure_dirs, load_images_from_folder, plot_heatmap, log_results
 
-def run_reduvis(input_dir, config_path="config.yaml"):
+def run_reduvis(input_dir, config_path="config.yaml", output_root="outputs"):
     start_time = time.time()
     with open(config_path, 'r') as f:
         cfg = yaml.safe_load(f)
@@ -14,12 +14,12 @@ def run_reduvis(input_dir, config_path="config.yaml"):
     
     images, names = load_images_from_folder(input_dir, cfg['resize_max'])
     n = len(images)
-    print(f"[INFO] Loaded {n} images from {input_dir}")
+
     
     p_hashes = [compute_phash(img, cfg['hash_size']) for img in images]
     d_hashes = [compute_dhash(img, cfg['hash_size']) for img  in images]
     
-    print(f"[INFO] Computing Similarity matrix....")
+
     dist_matrix = np.zeros((n,n))
     
     for i in tqdm(range(n)):
@@ -34,7 +34,6 @@ def run_reduvis(input_dir, config_path="config.yaml"):
     labels = cluster_features(dist_matrix, method=cfg['clustering']['method'], eps=cfg['clustering']['eps'],
                               min_samples=cfg['clustering']['min_samples'])
     
-    print(f"[INFO] Selecting reperesentative images....")
     
     cluster_map= {}
     report = []
@@ -52,12 +51,19 @@ def run_reduvis(input_dir, config_path="config.yaml"):
         for i in indices:
             if i != keep_idx:
                 removed.append(i)
-    for i in kept:
-        cv2.imwrite(os.path.join(cfg['output_dirs']['kept'], names[i]), images[i])
-    for i in removed:
-        cv2.imwrite(os.path.join(cfg['output_dirs']['removed'], names[i]), images[i])
+            
+    kept_dir = os.path.join(output_root, "kept")
+    removed_dir = os.path.join(output_root, "removed")
+    report_dir = os.path.join(output_root, "reports")
+    ensure_dirs([kept_dir, removed_dir, report_dir])
     
-    plot_heatmap(dist_matrix, names, os.path.join(cfg['output_dirs']['report'], "heatmap.png"))
+    for i in kept:
+        cv2.imwrite(os.path.join(kept_dir, names[i]), images[i])
+    for i in removed:
+        cv2.imwrite(os.path.join(removed_dir, names[i]), images[i])
+    
+    heatmap_path = os.path.join(report_dir, "heatmap.png")
+    plot_heatmap(dist_matrix, names, heatmap_path)
     
     summary = {
         "total_images": n,
@@ -66,7 +72,7 @@ def run_reduvis(input_dir, config_path="config.yaml"):
         "removed_percentage" : round(100 * len(removed)/n, 2),
         "runtime_sec" : round(time.time() - start_time, 2)          
     }
-    print(f"[Summary] {summary}")
+
     
     csv_path = log_results([
         {'name': names[i], 
@@ -74,16 +80,19 @@ def run_reduvis(input_dir, config_path="config.yaml"):
          "kept" : i in kept,
          "sharpness" : laplacian_variance(images[i])
          } for i in range(n)
-    ], cfg['output_dirs']['report'])
+    ], report_dir)
     
-    with open(os.path.join(cfg['output_dirs']['report'], "summary.json"), "w") as f:
-        import json
-        json.dump(summary, f, indent=4)
-    print(f"[INFO] Report saved to {csv_path}")
-    
-    return summary
 
-if __name__ == "__main__":
-    input_dir = r"D:\Think3DDD\mini_projects\1_smart_image_preprocessing_VisionPrep\output"
-    run_reduvis(input_dir)
+    
+    return {
+        "summary": summary,
+        "heatmap_path": heatmap_path,
+        "kept_dir": kept_dir,
+        "removed_dir": removed_dir,
+        "report_csv": csv_path
+    }
+
+# if __name__ == "__main__":
+#     input_dir = r"D:\Think3DDD\mini_projects\1_smart_image_preprocessing_VisionPrep\output"
+#     run_reduvis(input_dir)
     
